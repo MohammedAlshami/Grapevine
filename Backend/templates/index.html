@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <!-- Include Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-200">
+    <div class="container mx-auto py-12">
+        <div class="max-w-lg mx-auto bg-white shadow-md rounded-md p-6">
+            <h1 class="text-xl font-semibold mb-4">Chatbot Interface</h1>
+            <form id="chat-form" action="/chat" method="post">
+                <input id="message-input" type="text" name="message" class="w-full border-gray-300 rounded-md p-2 mb-4" placeholder="Enter your message...">
+                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">Send</button>
+            </form>
+            <div id="chat-messages">
+                {% for chat in chats %}
+                    <div class="bg-gray-{{ chat.bg }} rounded-md p-2 mt-4">
+                        <p class="text-gray-700">{{ chat.role }}: {{ chat.message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (message === '') return;
+            addMessage('You', message);
+            messageInput.value = '';
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message })
+            });
+            const data = await response.json();
+            addMessage('Bot', data.message, '100');
+        });
+
+        function addMessage(role, message, bg = '200') {
+            const div = document.createElement('div');
+            div.className = `bg-gray-${bg} rounded-md p-2 mt-4`;
+            div.innerHTML = `<p class="text-gray-700">${role}: ${message}</p>`;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>
